@@ -1,0 +1,7 @@
+#!/bin/bash
+pkill -f node
+
+TARGET=/home/ec2-user/index.js
+if [ -e $TARGET ]; then
+    rm -f $TARGET;
+fi

@@ -1,0 +1,12 @@
+stage: dev
+vpc:
+    cider_block: 10.0.0.0/16
+subnet:
+    ap-northeast-1a: 10.0.0.0/17
+    ap-northeast-1c: 10.0.128.0/17
+route:
+    cider_block: 0.0.0.0/0
+ec2:
+    instance_type: t2.micro
+    image_id: ami-0a2de1c3b415889d2
+    subnet_id: subnet-0a5e37acdd852971b

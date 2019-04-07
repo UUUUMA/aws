@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: VPC for uma-example
+Resources:
+  EC2:
+    Description: EC2 for uma-example in dev
+    Properties:
+      IamInstanceProfile:
+        Ref: EC2Profile
+      ImageId: ami-0a2de1c3b415889d2
+      InstanceType: t2.micro
+      KeyName: uma
+      Monitoring: true
+      SecurityGroupIds:
+      - sg-0fda2f0731812fac8
+      SubnetId: subnet-0a5e37acdd852971b
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-EC2
+      - Key: Service
+        Value: EC2
+      UserData:
+        Fn::Base64:
+          Fn::Sub: '#!/bin/bash -ex
+
+            yum -y install ruby
+
+            cd /tmp
+
+            wget https://aws-codedeploy-${AWS::Region}.s3.amazonaws.com/latest/install
+
+            chmod +x ./install
+
+            ./install auto
+
+            yum -y install awslogs
+
+            systemctl start awslogsd.service'
+    Type: AWS::EC2::Instance
+  EC2Profile:
+    Properties:
+      Roles:
+      - Ref: EC2Role
+    Type: AWS::IAM::InstanceProfile
+  EC2Role:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Sid: '1'
+        Version: '2012-10-17'
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:Get*
+            - s3:List*
+            - s3:DeleteObject
+            Effect: Allow
+            Resource:
+            - arn:aws:s3:::id001-uma-example-deploy
+            - arn:aws:s3:::id001-uma-example-deploy/*
+        PolicyName: GetS3Object
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - ssm:UpdateInstanceInformation
+            - ssm:ListAssociations
+            - ssm:ListInstanceAssociations
+            - ssmmessages:CreateControlChannel
+            - ec2messages:GetMessages
+            Effect: Allow
+            Resource: '*'
+        PolicyName: initializeSSMAgent
+      RoleName: ID001-UMA-EXAMPLE-EC2ROLE
+    Type: AWS::IAM::Role
+  EIP:
+    Description: EIP for uma-example EC2 in dev
+    Properties:
+      InstanceId:
+        Ref: EC2
+    Type: AWS::EC2::EIP

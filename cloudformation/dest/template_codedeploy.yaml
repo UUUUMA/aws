@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: VPC for uma-example
+Resources:
+  CodeDeploy:
+    Description: Code deploy for uma-example ec2 in dev
+    Properties:
+      ApplicationName: ID001-UMA-EXAMPLE-CODEDEPLOY
+      ComputePlatform: Server
+    Type: AWS::CodeDeploy::Application
+  CodeDeployRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - codedeploy.amazonaws.com
+          Sid: '1'
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:Get*
+            - s3:List*
+            - s3:DeleteObject
+            Effect: Allow
+            Resource:
+            - arn:aws:s3:::id001-uma-example-deploy
+            - arn:aws:s3:::id001-uma-example-deploy/*
+        PolicyName: GetS3Object
+      RoleName: ID001-UMA-EXAMPLE-CODEDEPLOYROLE
+    Type: AWS::IAM::Role
+  DeploymentGroup:
+    DependsOn: CodeDeployRole
+    Description: Deployment group for uma-example ec2 in dev
+    Properties:
+      ApplicationName: ID001-UMA-EXAMPLE-CODEDEPLOY
+      Deployment:
+        Revision:
+          RevisionType: S3
+          S3Location:
+            Bucket: id001-uma-example-deploy
+            BundleType: zip
+            Key: src.zip
+      DeploymentGroupName: ID001-UMA-EXAMPLE-DEPLOYMENTGROUP
+      Ec2TagFilters:
+      - Key: ID
+        Type: KEY_AND_VALUE
+        Value: ID001
+      - Key: Name
+        Type: KEY_AND_VALUE
+        Value: ID001-UMA-EXAMPLE-EC2
+      - Key: Service
+        Type: KEY_AND_VALUE
+        Value: EC2
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - CodeDeployRole
+        - Arn
+    Type: AWS::CodeDeploy::DeploymentGroup

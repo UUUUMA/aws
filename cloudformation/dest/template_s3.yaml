@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: VPC for uma-example
+Resources:
+  BucketPolicy:
+    DependsOn: DeployS3
+    Properties:
+      Bucket: id001-uma-example-deploy
+      PolicyDocument:
+        Statement:
+        - Action:
+          - s3:ListBucket
+          Effect: Allow
+          Principal:
+            AWS:
+              Ref: AWS::AccountId
+          Resource:
+            Fn::Sub: arn:aws:s3:::${DeployS3}
+        - Action:
+          - s3:GetObject
+          - s3:PutObject
+          - s3:DeleteObject
+          Effect: Allow
+          Principal:
+            AWS:
+              Ref: AWS::AccountId
+          Resource:
+            Fn::Sub: arn:aws:s3:::${DeployS3}/*
+    Type: AWS::S3::BucketPolicy
+  DeployS3:
+    Description: S3 Bucket for uma-example deploy in dev
+    Properties:
+      AccessControl: Private
+      BucketName: id001-uma-example-deploy
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-DEPLOYS3
+      - Key: Service
+        Value: DeployS3
+    Type: AWS::S3::Bucket

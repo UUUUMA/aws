@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: VPC for uma-example
+Resources:
+  InternetGeteway:
+    Description: InternetGateway for VPC
+    Properties:
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-INTERNETGATEWAY
+      - Key: Service
+        Value: InternetGateway
+    Type: AWS::EC2::InternetGateway
+  InternetGetewayAttachment:
+    Description: InternetGateway attach to VPC
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGeteway
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::VPCGatewayAttachment
+  Route:
+    DependsOn: InternetGetewayAttachment
+    Description: Route for uma-example in dev
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGeteway
+      RouteTableId:
+        Ref: RouteTable
+    Type: AWS::EC2::Route
+  RouteTable:
+    Description: RouteTable for uma-example in dev
+    Properties:
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-ROUTETABLE
+      - Key: Service
+        Value: RouteTable
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::RouteTable
+  SecurityGroup:
+    Description: SecurityGroup in dev
+    Properties:
+      GroupDescription: Simple Group for EC2
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+      - CidrIp: 0.0.0.0/0
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-SECURITYGROUP
+      - Key: Service
+        Value: SecurityGroup
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::SecurityGroup
+  SubnetApNortheast1a:
+    Description: Subnet for uma-example VPC at ap-northeast-1a in dev
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      CidrBlock: 10.0.0.0/17
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-SUBNET
+      - Key: Service
+        Value: Subnet
+      - Key: AZ
+        Value: ap-northeast-1a
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::Subnet
+  SubnetApNortheast1c:
+    Description: Subnet for uma-example VPC at ap-northeast-1c in dev
+    Properties:
+      AvailabilityZone: ap-northeast-1c
+      CidrBlock: 10.0.128.0/17
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-SUBNET
+      - Key: Service
+        Value: Subnet
+      - Key: AZ
+        Value: ap-northeast-1c
+      VpcId:
+        Ref: VPC
+    Type: AWS::EC2::Subnet
+  SubnetRouteTableAssociationApNortheast1a:
+    Description: Associate subnet route table for uma-example at ap-northeast-1a in
+      dev
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      SubnetId:
+        Ref: SubnetApNortheast1a
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  SubnetRouteTableAssociationApNortheast1c:
+    Description: Associate subnet route table for uma-example at ap-northeast-1c in
+      dev
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      SubnetId:
+        Ref: SubnetApNortheast1c
+    Type: AWS::EC2::SubnetRouteTableAssociation
+  VPC:
+    Description: VPC for uma-example in dev
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      Tags:
+      - Key: ID
+        Value: ID001
+      - Key: Name
+        Value: ID001-UMA-EXAMPLE-VPC
+      - Key: Service
+        Value: VPC
+    Type: AWS::EC2::VPC
